@@ -13,6 +13,7 @@ Decisions, the bugs the test suites actually caught, and what is deliberately ou
 | End-to-end (headless Chrome, real build) | `npm run probe` | **58 passed** / 58 |
 | Accessibility (axe-core + keyboard) | `npm run probe:a11y` | **49 passed** / 49 |
 | PDF glyph (OS PDF engine, pixel-level) | `npm run probe:glyph` | **1 passed** / 1 |
+| Live site (deployed URL, anonymous) | `npm run probe:live` | **17 passed** / 17 |
 
 Zero browser console errors across both browser suites — each collects every `console.error`
 and `pageerror` for the whole run and asserts the list is empty as its final check.
@@ -223,6 +224,25 @@ Static-hosting checks performed:
 
 ---
 
+## Deployment verification
+
+The live site was checked the same way the local build is: `probes/live.probe.ts` drives the
+**deployed** URL in a fresh, cookie-less browser context and fails on any console error. 17
+checks cover the public-ness of the alias, the catalog JSON and invoice fonts being served as
+real files (asserted on `Content-Type` and on the sfnt magic bytes, so an HTML fallback could
+not pass), every deep link resolving while a genuinely missing asset still 404s, and then the
+full journey: location, filters, veg toggle, customisation with live pricing, cart, coupon
+apply/reject/remove, address validation, order placement, tracking through to Delivered with a
+mid-flight refresh proving the order resumes, rating, reorder, PDF invoice download decoded
+back through its own embedded CMap to confirm the rupee glyph, owner view out-of-stock, dark
+mode across a reload, and no horizontal overflow at 390/834/1440 px.
+
+One genuine surprise during deployment: `vercel link` appends `.env*` to `.gitignore`, which
+would have silently cancelled this project's existing `!.env.example` exception. It was
+replaced with explicit `.vercel/` and `.env.local` patterns.
+
+---
+
 ## Known limitations
 
 - Demo auth/payments do not exist at all; there are no accounts, so "your data" means this
@@ -232,6 +252,7 @@ Static-hosting checks performed:
 - Reviews only ever come from this browser, so the rating breakdown blends the user's own
   reviews with the catalog's baseline count rather than showing a real review corpus
 - No service worker, so the app needs a network round-trip for its data files on first load
-- Not deployed. Nothing in this project requires a login, token or deployment setting to run
-  locally; if you want it on Vercel, `vercel.json` is ready and the only manual step is
-  connecting the repo in your own Vercel account.
+- Deployed to Vercel at https://foodrush-zeta.vercel.app from
+  https://github.com/DIVYAPRIYADHARSHINI-GIT/foodrush. Deployment Protection sits at its
+  default scope (`all_except_custom_domains`), so the production alias is public while raw
+  per-deployment URLs return 302 to anonymous visitors - share the alias, not the hashed URL.

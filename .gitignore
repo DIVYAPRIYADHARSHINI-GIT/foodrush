@@ -19,3 +19,10 @@ static/fonts/
 # Probe screenshots ARE committed: they are the visual proof artifacts referenced by the
 # README and NOTES. Only the live-site variants (regenerated per deployment) are ignored.
 probes/screenshots-live/
+
+# Added by `vercel link`. `.vercel/` holds the project id and a short-lived OIDC token;
+# `.env.local` is written by the CLI and must never be committed. Kept as explicit patterns
+# rather than the CLI's bare `.env*`, which would have silently cancelled the
+# `!.env.example` exception above.
+.vercel/
+.env.local

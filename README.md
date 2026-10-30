@@ -1,5 +1,7 @@
 # FoodRush — "Hungry? Order in minutes."
 
+**Live:** https://foodrush-zeta.vercel.app  ·  **Repo:** https://github.com/DIVYAPRIYADHARSHINI-GIT/foodrush
+
 A polished, browser-only food ordering and delivery demo for Indian cities: browse
 neighbourhood restaurants, filter veg/non-veg, customise dishes, build a cart, apply
 coupons, check out, track the rider live, rate the food, reorder, and flip into a simple
@@ -38,7 +40,15 @@ npm run test        # 183 unit tests (pure logic, storage, PDF font encoding)
 npm run probe       # 58 end-to-end checks in headless Chrome, against the real build
 npm run probe:a11y  # 49 accessibility + keyboard checks (axe-core)
 npm run probe:glyph # pixel proof that the PDF draws a real ₹ (macOS PDF engine)
-npm run test:all    # all five, in order
+npm run probe:live  # 17 checks against the DEPLOYED site, anonymously
+npm run test:all    # all five local suites, in order
+```
+
+`probe:live` targets `FOODRUSH_URL` (default: the production alias), so it can verify any
+deployment:
+
+```bash
+FOODRUSH_URL=https://foodrush-zeta.vercel.app npm run probe:live
 ```
 
 ---
@@ -233,9 +243,17 @@ foodrush/
 
 ## Deployment
 
+Live at **https://foodrush-zeta.vercel.app**, deployed from `main` on Vercel.
+
 `vercel.json` sets `outputDirectory: build`, rewrites unmatched routes to `200.html` (real
-files and asset extensions are excluded so data files never return HTML), and sets
-`immutable` caching on hashed assets. Nothing needs environment variables.
+files and asset extensions are excluded so data files and the invoice font never return
+HTML), and sets long-lived caching on hashed assets, data, images and fonts. Nothing needs
+environment variables and there is no server runtime.
+
+Vercel's Deployment Protection is enabled for this project at its default scope,
+`all_except_custom_domains`. That means the **production alias above is public**, while the
+per-deployment URLs (`foodrush-<hash>-<scope>.vercel.app`) answer `302` to an anonymous
+visitor. The alias is the link to share.
 
 ---
 
