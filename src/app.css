@@ -1,0 +1,280 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/plus-jakarta-sans';
+
+/*
+ * FoodRush design system.
+ *
+ * Identity: warm and appetising, built on ONE bold accent - a deep saffron/marigold that
+ * is deliberately neither Swiggy orange (#FC8019) nor Zomato red (#E23744). It sits
+ * between them on the wheel and runs cooler and deeper, paired with a charcoal-cocoa
+ * neutral ramp and a cream paper surface so food photography reads as the brightest thing
+ * on the page.
+ *
+ * Every colour is a token. Components never hard-code a hex value, so light and dark stay
+ * in sync by construction. Veg/non-veg green and red are FIXED semantic hues - they are a
+ * food-safety signal in India and must never be re-themed.
+ */
+
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+	--font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+	/* Accent: marigold/saffron. 500 is the brand fill, 600/700 are the light-mode TEXT
+	 * steps and must clear 4.5:1 on cream, so they are much deeper than a naive ramp. */
+	--color-saffron-50: #fff8ed;
+	--color-saffron-100: #ffefd4;
+	--color-saffron-200: #ffdba8;
+	--color-saffron-300: #ffc071;
+	--color-saffron-400: #fda038;
+	--color-saffron-500: #f5820b;
+	--color-saffron-600: #b35309;
+	--color-saffron-700: #8f420e;
+	--color-saffron-800: #743712;
+	--color-saffron-900: #612f12;
+
+	/* Neutral: warm charcoal + cocoa, so the UI never looks blue-grey next to food. */
+	--color-cocoa-50: #faf7f4;
+	--color-cocoa-100: #f3ede7;
+	--color-cocoa-200: #e6dcd2;
+	--color-cocoa-300: #d2c3b4;
+	/*
+	 * 400/500 carry small muted copy, so they are LIGHT-mode text steps and must clear
+	 * 4.5:1 on the cream page: the original #a89582 measured 2.88:1 on white and #857262
+	 * measured 4.41:1 on paper - both fail AA.
+	 *
+	 * Dark mode needs the opposite: those same darkened values only reach 3.2:1 on the
+	 * near-black surface. So muted text pairs `text-cocoa-500` with `dark:text-cocoa-300`
+	 * (9.57:1 on cocoa-900), and the two original tints stay available as -soft for borders
+	 * and decorative fills, where the contrast rule does not apply.
+	 */
+	--color-cocoa-400: #7d6a5b;
+	--color-cocoa-500: #74604f;
+	--color-cocoa-400-soft: #a89582;
+	--color-cocoa-500-soft: #857262;
+	--color-cocoa-600: #6b5a4c;
+	--color-cocoa-700: #51443a;
+	--color-cocoa-800: #352c26;
+	--color-cocoa-900: #241e1a;
+	--color-cocoa-950: #171310;
+
+	/* Paper: the cream page surface that makes this feel like a menu, not a dashboard. */
+	--color-paper: #fdfaf6;
+	--color-paper-sunk: #f6efe7;
+
+	/* FIXED food semantics - never re-theme these two. */
+	/* --color-veg is the regulated SYMBOL colour and is never used for small text: at 12px
+	 * on white it measures 4.44:1, just under AA. --color-veg-ink (6.65:1) is the text step. */
+	--color-veg: #0f8a3d;
+	--color-veg-ink: #0b6b2f;
+	--color-nonveg: #b3261e;
+	--color-nonveg-ink: #8f1d17;
+
+	/* State */
+	--color-success: #15803d;
+	--color-success-bright: #22c55e;
+	--color-warn: #b45309;
+	--color-warn-bright: #f59e0b;
+	--color-danger: #b91c1c;
+	/* #ef4444 measured 4.37:1 on the dark card surface - just under AA - so the dark-mode
+	 * danger text step is one stop lighter (5.95:1). */
+	--color-danger-bright: #f87171;
+	--color-info: #1d4ed8;
+
+	/* Rating badge green, as used on Indian food apps. */
+	--color-rating: #1a7f44;
+
+	--radius-card: 1.25rem;
+}
+
+@layer base {
+	html {
+		-webkit-text-size-adjust: 100%;
+		/* Mobile-first: ordering happens one-handed, so no accidental zoom on tap. */
+		-webkit-tap-highlight-color: transparent;
+		scroll-behavior: smooth;
+		/*
+		 * Keep "scroll into view" clear of the sticky header and sticky category tabs at the
+		 * top, and of the fixed mobile tab bar + sticky cart bar at the bottom. Without this
+		 * a jumped-to control lands UNDER a sticky bar and cannot be clicked - which the e2e
+		 * suite caught as an intercepted pointer event.
+		 */
+		scroll-padding-top: 7.5rem;
+		scroll-padding-bottom: 9rem;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		html {
+			scroll-behavior: auto;
+		}
+	}
+
+	body {
+		@apply bg-paper text-cocoa-900 font-sans antialiased;
+	}
+
+	:where(.dark) body {
+		@apply bg-cocoa-950 text-cocoa-50;
+	}
+
+	/*
+	 * Focus ring: always visible for keyboard users on EVERY interactive element. The
+	 * saffron 600 clears contrast on cream; the 300 step is used on dark surfaces.
+	 */
+	:focus-visible {
+		@apply outline-saffron-600 dark:outline-saffron-300 outline-2 outline-offset-2;
+	}
+
+	/* Hide number spinners - the quantity stepper provides bigger thumb targets. */
+	input[type='number']::-webkit-outer-spin-button,
+	input[type='number']::-webkit-inner-spin-button {
+		-webkit-appearance: none;
+		margin: 0;
+	}
+
+	input[type='number'] {
+		-moz-appearance: textfield;
+	}
+
+	/* Images always reserve their box so a slow/broken load cannot shift the layout. */
+	img {
+		@apply block max-w-full;
+	}
+}
+
+/*
+ * Component classes.
+ *
+ * Tailwind 4 cannot `@apply` another custom class, so each variant repeats the shared
+ * button utilities instead of extending a base class. `@utility` (not `@layer components`)
+ * is what lets these be used with variants like `sm:` and `hover:` from markup.
+ */
+
+@utility fr-card {
+	@apply bg-white dark:bg-cocoa-900 border-cocoa-200/80 dark:border-cocoa-800 rounded-card border shadow-sm;
+}
+
+@utility fr-sunk {
+	@apply bg-paper-sunk dark:bg-cocoa-900/60 rounded-2xl;
+}
+
+/* 44px minimum height everywhere: thumb-friendly tap targets on phones. */
+@utility fr-btn {
+	@apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-55;
+}
+
+@utility fr-btn-primary {
+	@apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-55;
+	/* saffron-600, not the brighter brand 500: white text on #f5820b measures only 2.6:1,
+	 * while #b35309 clears AA at 5.05:1. The bright 500 is still the brand fill for large
+	 * shapes and icons that carry no text. */
+	@apply bg-saffron-600 hover:bg-saffron-700 text-white;
+}
+
+@utility fr-btn-secondary {
+	@apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-55;
+	@apply border-cocoa-300 text-cocoa-800 hover:bg-cocoa-100 dark:border-cocoa-700 dark:text-cocoa-100 dark:hover:bg-cocoa-800 border bg-transparent;
+}
+
+@utility fr-btn-ghost {
+	@apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-55;
+	@apply text-cocoa-700 hover:bg-cocoa-100 dark:text-cocoa-200 dark:hover:bg-cocoa-800 bg-transparent;
+}
+
+@utility fr-btn-danger {
+	@apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-55;
+	@apply text-danger hover:bg-danger/10 dark:text-danger-bright border border-current bg-transparent;
+}
+
+@utility fr-input {
+	@apply border-cocoa-300 dark:border-cocoa-700 dark:bg-cocoa-900 placeholder:text-cocoa-400 min-h-11 w-full rounded-xl border bg-white px-3.5 text-sm;
+}
+
+@utility fr-label {
+	@apply text-cocoa-700 dark:text-cocoa-200 mb-1.5 block text-sm font-semibold;
+}
+
+@utility fr-error {
+	@apply text-danger dark:text-danger-bright mt-1.5 flex items-start gap-1 text-xs font-medium;
+}
+
+@utility fr-chip {
+	@apply border-cocoa-300 text-cocoa-700 hover:border-saffron-500 dark:border-cocoa-700 dark:text-cocoa-200 inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-full border bg-transparent px-3.5 text-xs font-semibold whitespace-nowrap transition-colors;
+}
+
+@utility fr-chip-active {
+	@apply border-saffron-500 bg-saffron-500/12 text-saffron-700 dark:text-saffron-200 dark:bg-saffron-500/20;
+}
+
+@utility fr-skeleton {
+	@apply bg-cocoa-200/70 dark:bg-cocoa-800 relative overflow-hidden rounded-xl;
+
+	&::after {
+		@apply absolute inset-0;
+		content: '';
+		background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.45), transparent);
+		animation: fr-shimmer 1.4s infinite;
+	}
+}
+
+:where(.dark) .fr-skeleton::after {
+	background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.08), transparent);
+}
+
+/*
+ * "Unavailable" treatment for out-of-stock dishes and inapplicable coupons.
+ *
+ * Deliberately NOT `opacity-*`: dimming a container multiplies its TEXT against the page
+ * behind it, which pushed several already-AA colours below 4.5:1 (axe caught 4.19:1 and
+ * 3.83:1 this way). A muted background plus a saturation drop reads as "inactive" while
+ * leaving every glyph at full opacity.
+ */
+@utility fr-dimmed {
+	@apply bg-paper-sunk/70 dark:bg-cocoa-900/70 saturate-50;
+}
+
+@utility fr-rating {
+	@apply bg-rating inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-xs font-bold text-white;
+}
+
+/* Screen-reader-only text that becomes visible on focus (skip link). */
+@utility fr-skip {
+	@apply bg-saffron-500 sr-only rounded-br-xl px-4 py-2 font-semibold text-white focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-50;
+}
+
+/* Hide scrollbars on horizontal rails while keeping them scrollable. */
+@utility fr-rail {
+	scrollbar-width: none;
+
+	&::-webkit-scrollbar {
+		display: none;
+	}
+}
+
+@keyframes fr-shimmer {
+	100% {
+		transform: translateX(100%);
+	}
+}
+
+@keyframes fr-rise {
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.fr-rise {
+	animation: fr-rise 0.28s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.fr-rise,
+	.fr-skeleton::after {
+		animation: none;
+	}
+}
